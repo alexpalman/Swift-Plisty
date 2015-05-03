@@ -1,10 +1,24 @@
+// The MIT License (MIT)
 //
-//  Plisty.swift
-//  plisty
+// Copyright (c) 2015 Alexander Palmanshofer
 //
-//  Created by Alexander Palmanshofer on 30.04.15.
-//  Copyright (c) 2015 Alexander Palmanshofer. All rights reserved.
+// Permission is hereby granted, free of charge, to any person obtaining a copy
+// of this software and associated documentation files (the "Software"), to deal
+// in the Software without restriction, including without limitation the rights
+// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+// copies of the Software, and to permit persons to whom the Software is
+// furnished to do so, subject to the following conditions:
 //
+// The above copyright notice and this permission notice shall be included in all
+// copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+// SOFTWARE.
 
 import Foundation
 
@@ -20,6 +34,17 @@ class Plisty {
                             "NSConcreteData" : "__NSCFData",
                             "_NSZeroData"    : "__NSCFData"]
     
+    private var checkTypes: Bool
+    
+    // By default, check types
+    init() {
+        self.checkTypes = true
+    }
+    
+    init(checkTypes: Bool) {
+        self.checkTypes = checkTypes
+    }
+    
     private func singleObjectByDictionary<T: NSObject>(dictionary: NSDictionary, classType: T.Type) -> T {
         // Instantiate object of given type
         var desiredObject = classType()
@@ -32,8 +57,16 @@ class Plisty {
             let dictionaryPropertyValue: AnyObject? = dictionary[propertyName]
             // Check if the value really exists inside the NSDictionary
             if let dictionaryPropertyValue: AnyObject = dictionaryPropertyValue {
-                // Set value on our object
-                desiredObject.setValue(dictionaryPropertyValue, forKey: propertyName)
+                // Check types if it was activated
+                if checkTypes {
+                    if typesMatching(swiftType: mirrorType[i].1.valueType, foundationType: dictionaryPropertyValue.dynamicType) {
+                        // Types should match, set value on our object
+                        desiredObject.setValue(dictionaryPropertyValue, forKey: propertyName)
+                    }
+                } else {
+                    // Lets see if this fits... Crashes when types mismatch
+                    desiredObject.setValue(dictionaryPropertyValue, forKey: propertyName)
+                }
             }
         }
         // Return the constructed object
@@ -75,7 +108,7 @@ class Plisty {
             if let dictionaries = plistData as? [AnyObject] {
                 for element in dictionaries {
                     // Only try to use actual dictionaries, simple Strings and Numbers cannot be used by
-                    // us to set multiple properties
+                    // us to create an object with multiple properties
                     if element is NSDictionary {
                         listOfDesiredObjects.append(singleObjectByDictionary(element as! NSDictionary, classType: classType))
                     }
@@ -86,7 +119,18 @@ class Plisty {
         return listOfDesiredObjects
     }
     
-    private func validateValueType() -> Bool {
+    private func typesMatching(#swiftType: Any.Type, foundationType: AnyObject.Type) -> Bool {
+        // Compare by the string representation of the types
+        // Sadly, I couldn't find any better way to do this
+        let stringifiedSwiftType = "\(swiftType)"
+        let stringifiedFoundationType = "\(foundationType)"
+        // Fetch mapping
+        let mapping = TYPE_MAP[stringifiedSwiftType]
+        if let existingMapping = mapping {
+            // Compare types
+            return existingMapping == stringifiedFoundationType
+        }
+        // Unknown type or other error
         return false
     }
 }
