@@ -1,29 +1,26 @@
-// The MIT License (MIT)
 //
-// Copyright (c) 2015 Alexander Palmanshofer
+//  Plisty.swift
+//  plisty
 //
-// Permission is hereby granted, free of charge, to any person obtaining a copy
-// of this software and associated documentation files (the "Software"), to deal
-// in the Software without restriction, including without limitation the rights
-// to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-// copies of the Software, and to permit persons to whom the Software is
-// furnished to do so, subject to the following conditions:
+//  Created by Alexander Palmanshofer on 30.04.15.
+//  Copyright (c) 2015 Alexander Palmanshofer. All rights reserved.
 //
-// The above copyright notice and this permission notice shall be included in all
-// copies or substantial portions of the Software.
-//
-// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-// IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-// FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-// AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-// LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-// OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-// SOFTWARE.
 
 import Foundation
 
 class Plisty {
-    private class func singleObjectByDictionary<T: NSObject>(dictionary: NSDictionary, classType: T.Type) -> T {
+    // The AnyObjects from the plist have different actual types than Swift
+    // TYPE_MAP is a mapping between these Foundation/Cocoa Types to the Swift ones
+    private let TYPE_MAP = ["Swift.Bool"     : "__NSCFBoolean",
+                            "Swift.String"   : "__NSCFString",
+                            "Swift.Double"   : "__NSCFNumber",
+                            "Swift.Float"    : "__NSCFNumber",
+                            "Swift.Int"      : "__NSCFNumber",
+                            "__NSDate"       : "__NSDate",
+                            "NSConcreteData" : "__NSCFData",
+                            "_NSZeroData"    : "__NSCFData"]
+    
+    private func singleObjectByDictionary<T: NSObject>(dictionary: NSDictionary, classType: T.Type) -> T {
         // Instantiate object of given type
         var desiredObject = classType()
         // Get available properties of given type
@@ -43,12 +40,13 @@ class Plisty {
         return desiredObject
     }
     /**
-    * Generates an object based on the given plist path and class type.
-    * @param pathToPlist Path to plist as String
-    * @param classType Type of desired object. e.g. MyClass.self
-    * @return Object of given type with properties set according to given plist
+      Generates an object based on the given plist path and class type.
+    
+      :param: pathToPlist Path to plist as String
+      :param: classType Type of desired object. e.g. MyClass.self
+      :returns: Object of given type with properties set according to given plist
     */
-    class func singleObjectByPath<T: NSObject>(pathToPlist: String, classType: T.Type) -> T {
+    func singleObjectByPath<T: NSObject>(pathToPlist: String, classType: T.Type) -> T {
         // Load contents as NSDictionary
         let plistData = NSDictionary(contentsOfFile: pathToPlist)
         // Check if the file exists
@@ -60,12 +58,13 @@ class Plisty {
         return classType()
     }
     /**
-    * Generates an array of objects based on the given plist path and class type.
-    * @param pathToPlist Path to plist as String
-    * @param classType Type of desired object. e.g. MyClass.self
-    * @return Array of objects of given type with properties set according to given plist
+      Generates an array of objects based on the given plist path and class type.
+    
+      :param: pathToPlist Path to plist as String
+      :param: classType Type of desired object. e.g. MyClass.self
+      :returns: Array of objects of given type with properties set according to given plist
     */
-    class func multipleObjectsByPath<T: NSObject>(pathToPlist: String, classType: T.Type) -> [T] {
+    func multipleObjectsByPath<T: NSObject>(pathToPlist: String, classType: T.Type) -> [T] {
         // Load contents as NSArray
         let plistData = NSArray(contentsOfFile: pathToPlist)
         // Create list for our objects
@@ -85,5 +84,9 @@ class Plisty {
         }
         // Return an empty list instead of nil
         return listOfDesiredObjects
+    }
+    
+    private func validateValueType() -> Bool {
+        return false
     }
 }
