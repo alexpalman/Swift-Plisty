@@ -7,6 +7,7 @@ Things to consider:
 * Objects correspond to Dictionaries inside a plist
 * Arrays of objects correspond to Arrays of Dictionaries inside a plist
 * Your objects must not contain Optionals and should set all properties to default values
+* Your objects must extend NSObject
 * Recursive definitions of objects are not supported
 
 Plisty is able to check types for you and only set properties when their types match with the ones
