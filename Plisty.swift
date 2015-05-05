@@ -30,6 +30,7 @@ class Plisty {
                             "Swift.Double"   : "__NSCFNumber",
                             "Swift.Float"    : "__NSCFNumber",
                             "Swift.Int"      : "__NSCFNumber",
+                            "__NSCFNumber"   : "__NSCFNumber",
                             "__NSDate"       : "__NSDate",
                             "NSConcreteData" : "__NSCFData",
                             "_NSZeroData"    : "__NSCFData"]
